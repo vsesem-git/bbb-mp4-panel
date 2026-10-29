@@ -7,6 +7,7 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/vsesem-git/bbb-mp4-panel.git"
+BRANCH="arena/7d242e21-bbb-mp4-panel"
 INSTALL_DIR="/opt/bbb-mp4-panel"
 PORT="${PORT:-3000}"
 DATA_DIR="${DATA_DIR:-/var/lib/bbb-mp4-panel}"
@@ -37,10 +38,11 @@ main() {
   install_docker
 
   if [ ! -d "$INSTALL_DIR/.git" ]; then
-    log "Клонируем репозиторий в $INSTALL_DIR"
-    git clone "$REPO_URL" "$INSTALL_DIR"
+    log "Клонируем репозиторий (ветка $BRANCH) в $INSTALL_DIR"
+    git clone -b "$BRANCH" "$REPO_URL" "$INSTALL_DIR"
   else
-    log "Обновляем репозиторий в $INSTALL_DIR"
+    log "Обновляем репозиторий в $INSTALL_DIR (ветка $BRANCH)"
+    git -C "$INSTALL_DIR" checkout "$BRANCH" 2>/dev/null || git -C "$INSTALL_DIR" checkout -b "$BRANCH" origin/"$BRANCH" 2>/dev/null || true
     git -C "$INSTALL_DIR" pull --ff-only
   fi
 
@@ -49,7 +51,7 @@ main() {
     log "Создан $INSTALL_DIR/.env из .env.example (отредактируйте при необходимости)"
   fi
 
-  #_PORT_ из окружения берет приоритет
+  # PORT из окружения берет приоритет
   sed -i "s/^PORT=.*/PORT=$PORT/" "$INSTALL_DIR/.env"
 
   mkdir -p "$DATA_DIR"
