@@ -243,7 +243,7 @@ async function recordTask(task, ctrl) {
       if (!(await sleepInterruptible(60000, ctrl))) break;
 
       if (ffmpegProc.exitCode !== null) {
-        finalStatus = 'done';
+        finalStatus = ffmpegProc.exitCode === 0 ? 'done' : 'error';
         break;
       }
 

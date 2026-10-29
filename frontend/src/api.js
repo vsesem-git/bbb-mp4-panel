@@ -7,7 +7,7 @@ async function json(res) {
     let msg = `HTTP ${res.status}`;
     try {
       const body = await res.json();
-      if (body.error) msg = body.error;
+      if (body && body.error) msg = body.error;
     } catch (e) { /* ignore */ }
     throw new Error(msg);
   }

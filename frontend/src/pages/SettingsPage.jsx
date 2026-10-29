@@ -70,8 +70,8 @@ export default function SettingsPage() {
         <div className="setting-row">
           <label>Пресет кодирования (-preset)</label>
           <select value={values.FFMPEG_PRESET} onChange={(e) => setValues({ ...values, FFMPEG_PRESET: e.target.value })}>
-            ['ultrafast','superfast','veryfast','faster','fast','medium','slow','slower','veryslow'].map((p) => (
-              <option key={p} value={p}>{p}</option>
+            {['ultrafast','superfast','veryfast','faster','fast','medium','slow','slower','veryslow'].map((preset) => (
+              <option key={preset} value={preset}>{preset}</option>
             ))}
           </select>
         </div>
