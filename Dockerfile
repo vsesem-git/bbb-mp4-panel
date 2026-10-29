@@ -2,7 +2,7 @@ FROM node:22-slim
 
 ENV NODE_ENV=production \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
-    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_SKIP_DOWNLOAD=true \
     CHROME_PATH=/usr/bin/chromium \
     PORT=3000 \
     DATA_DIR=/data
@@ -14,10 +14,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
+# Настройки npm для нестабильных сетей: повторные попытки и большие таймауты.
+RUN npm config set fetch-retries 5 \
+    && npm config set fetch-retry-maxtimeout 60000 \
+    && npm config set fetch-retry-mintimeout 10000
+
 # Бэкенд: устанавливаем production-зависимости (puppeteer не качает Chromium —
-# используется системный /usr/bin/chromium, см. PUPPETEER_SKIP_CHROMIUM_DOWNLOAD).
+# используется системный /usr/bin/chromium, см. PUPPETEER_SKIP_DOWNLOAD).
 COPY backend/package.json ./backend/package.json
-RUN cd /app/backend && npm install --omit=dev
+RUN cd /app/backend && npm install --omit=dev || (sleep 30 && npm install --omit=dev)
 
 # Фронт: устанавливаем зависимости (включая dev — vite нужен для сборки),
 # собираем SPA, затем удаляем dev-зависимости из образа.
