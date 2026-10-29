@@ -1,10 +1,14 @@
+import { Component } from 'react';
+import { ErrorContext } from '../context/ErrorContext.jsx';
+
 /**
  * Error Boundary перехватывает ошибки рендеринга в дочерних компонентах,
  * чтобы вся страница не fell на белый экран из-за одной ошибки.
+ * Все ошибки отправляются в журнал ошибок.
  */
-import { Component } from 'react';
-
 export class ErrorBoundary extends Component {
+  static contextType = ErrorContext;
+
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -15,6 +19,15 @@ export class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
+    const { addError } = this.context;
+    if (addError) {
+      addError({
+        category: 'unknown',
+        message: error.message || 'Ошибка рендеринга React',
+        source: 'ui',
+        details: errorInfo.componentStack || '',
+      });
+    }
     console.error('ErrorBoundary caught an error:', error, errorInfo.componentStack);
   }
 
@@ -30,6 +43,9 @@ export class ErrorBoundary extends Component {
           >
             Перезагрузить страницу
           </button>
+          <p className="small" style={{ marginTop: 12 }}>
+            Подробности ошибки доступны на вкладке <strong>Ошибки</strong>.
+          </p>
         </div>
       );
     }

@@ -2,14 +2,32 @@
  * Клиент API. Все URL относительные — бэкенд и фронт живут на одном хосте,
  * никаких хардкодов IP/домена (см. README).
  */
+
+function categorizeError(status, message) {
+  if (!status || status === 0) {
+    if (/network|fetch|failed to fetch|net::ERR/i.test(message || '')) {
+      return 'chrome';
+    }
+    return 'unknown';
+  }
+  if (status >= 400 && status < 500) return 'validation';
+  if (status >= 500) return 'container';
+  return 'api';
+}
+
 async function json(res) {
   if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
+    let msg = `Ошибка сервера (HTTP ${res.status})`;
     try {
       const body = await res.json();
       if (body && body.error) msg = body.error;
     } catch (e) { /* ignore */ }
-    throw new Error(msg);
+
+    const err = new Error(msg);
+    err.category = categorizeError(res.status, msg);
+    err.status = res.status;
+    err.source = 'api';
+    throw err;
   }
   return res.json();
 }

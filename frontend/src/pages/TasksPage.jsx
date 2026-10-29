@@ -12,6 +12,7 @@ import {
   formatHMS,
   STATUS_LABELS,
 } from '../api.js';
+import { useErrors, CATEGORIES } from '../context/ErrorContext.jsx';
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState([]);
@@ -25,17 +26,38 @@ export default function TasksPage() {
   });
   const [customResolution, setCustomResolution] = useState('');
   const [toast, setToast] = useState(null);
+  const { addError } = useErrors();
 
   useEffect(() => {
     let mounted = true;
-    fetchSettings().then((s) => { if (mounted) setSettings(s); }).catch(() => {});
+    fetchSettings()
+      .then((s) => { if (mounted) setSettings(s); })
+      .catch((err) => {
+        if (mounted) {
+          addError({
+            category: err.category || 'api',
+            message: err.message || 'Не удалось загрузить настройки',
+            source: 'tasks',
+            details: `HTTP ${err.status || 'неизвестно'}`,
+          });
+        }
+      });
     const timer = setInterval(() => { if (mounted) refresh(); }, 30000);
     return () => { mounted = false; clearInterval(timer); };
-  }, []);
+  }, [addError]);
 
   const refresh = useCallback(() => {
-    fetchTasks().then(setTasks).catch(() => {});
-  }, []);
+    fetchTasks()
+      .then(setTasks)
+      .catch((err) => {
+        addError({
+          category: err.category || 'api',
+          message: err.message || 'Не удалось загрузить список задач',
+          source: 'tasks',
+          details: `HTTP ${err.status || 'неизвестно'}`,
+        });
+      });
+  }, [addError]);
 
   useEffect(() => {
     refresh();
@@ -65,6 +87,12 @@ export default function TasksPage() {
       refresh();
       showToast('Задание добавлено');
     } catch (err) {
+      addError({
+        category: err.category || 'validation',
+        message: err.message || 'Не удалось создать задачу',
+        source: 'tasks',
+        details: `HTTP ${err.status || 'неизвестно'}`,
+      });
       showToast('Ошибка: ' + err.message, 'err');
     } finally {
       setLoading(false);
@@ -72,16 +100,52 @@ export default function TasksPage() {
   };
 
   const handleStop = async (id) => {
-    try { await stopTask(id); refresh(); showToast('Остановка записи…'); } catch (err) { showToast('Ошибка: ' + err.message, 'err'); }
+    try {
+      await stopTask(id);
+      refresh();
+      showToast('Остановка записи…');
+    } catch (err) {
+      addError({
+        category: err.category || 'api',
+        message: err.message || 'Не удалось остановить задачу',
+        source: 'tasks',
+        details: `HTTP ${err.status || 'неизвестно'}`,
+      });
+      showToast('Ошибка: ' + err.message, 'err');
+    }
   };
 
   const handleDelete = async (id, meetingId) => {
     if (!window.confirm(`Удалить задание "${meetingId}" и его файлы?`)) return;
-    try { await deleteTask(id); refresh(); showToast('Удалено'); } catch (err) { showToast('Ошибка: ' + err.message, 'err'); }
+    try {
+      await deleteTask(id);
+      refresh();
+      showToast('Удалено');
+    } catch (err) {
+      addError({
+        category: err.category || 'api',
+        message: err.message || 'Не удалось удалить задачу',
+        source: 'tasks',
+        details: `HTTP ${err.status || 'неизвестно'}`,
+      });
+      showToast('Ошибка: ' + err.message, 'err');
+    }
   };
 
   const handleRetry = async (id) => {
-    try { await retryTask(id); refresh(); showToast('Повтор запущен'); } catch (err) { showToast('Ошибка: ' + err.message, 'err'); }
+    try {
+      await retryTask(id);
+      refresh();
+      showToast('Повтор запущен');
+    } catch (err) {
+      addError({
+        category: err.category || 'api',
+        message: err.message || 'Не удалось запустить повтор',
+        source: 'tasks',
+        details: `HTTP ${err.status || 'неизвестно'}`,
+      });
+      showToast('Ошибка: ' + err.message, 'err');
+    }
   };
 
   const rowKey = (t) => t.id;

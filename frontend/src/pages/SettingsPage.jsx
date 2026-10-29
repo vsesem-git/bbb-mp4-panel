@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchSettings, updateSettings, RESOLUTION_OPTIONS } from '../api.js';
+import { useErrors, CATEGORIES } from '../context/ErrorContext.jsx';
 
 export default function SettingsPage() {
   const [values, setValues] = useState({
@@ -12,10 +13,21 @@ export default function SettingsPage() {
   const [customResolution, setCustomResolution] = useState('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
+  const { addError } = useErrors();
 
   useEffect(() => {
-    fetchSettings().then(setValues).catch(() => setToast('Не удалось загрузить настройки', 'err'));
-  }, []);
+    fetchSettings()
+      .then(setValues)
+      .catch((err) => {
+        addError({
+          category: err.category || 'api',
+          message: err.message || 'Не удалось загрузить настройки',
+          source: 'settings',
+          details: `HTTP ${err.status || 'неизвестно'}`,
+        });
+        setToast('Не удалось загрузить настройки', 'err');
+      });
+  }, [addError]);
 
   const showToast = (msg, type = 'ok') => {
     setToast({ msg, type });
@@ -33,6 +45,12 @@ export default function SettingsPage() {
       setValues({ ...values, RESOLUTION: resolution });
       showToast('Настройки сохранены');
     } catch (err) {
+      addError({
+        category: err.category || 'api',
+        message: err.message || 'Не удалось сохранить настройки',
+        source: 'settings',
+        details: `HTTP ${err.status || 'неизвестно'}`,
+      });
       showToast('Ошибка: ' + err.message, 'err');
     } finally {
       setSaving(false);
@@ -45,6 +63,7 @@ export default function SettingsPage() {
       <p className="small">
         Применяются к новым заданиям, если при создании не указаны свои значения.
         На уже созданные задания не распространяются.
+        Ошибки сохраняются и отображаются на вкладке <strong>Ошибки</strong>.
       </p>
       <form onSubmit={handleSave} className="form-grid">
         <div className="setting-row">
@@ -70,7 +89,7 @@ export default function SettingsPage() {
         <div className="setting-row">
           <label>Пресет кодирования (-preset)</label>
           <select value={values.FFMPEG_PRESET} onChange={(e) => setValues({ ...values, FFMPEG_PRESET: e.target.value })}>
-            {['ultrafast','superfast','veryfast','faster','fast','medium','slow','slower','veryslow'].map((preset) => (
+            {['ultrafast', 'superfast', 'veryfast', 'faster', 'fast', 'medium', 'slow', 'slower', 'veryslow'].map((preset) => (
               <option key={preset} value={preset}>{preset}</option>
             ))}
           </select>
