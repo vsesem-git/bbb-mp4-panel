@@ -18,7 +18,7 @@ services:
       - bbb-mp4-data:/data
     shm_size: '2gb'
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:${PORT:-3000}/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:${PORT:-3000}/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
