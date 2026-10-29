@@ -24,7 +24,7 @@ RUN npm config set fetch-retries 5 \
 COPY backend/package.json ./backend/package.json
 RUN cd /app/backend && npm install --omit=dev || (sleep 30 && npm install --omit=dev)
 
-# Фронт: устанавливаем зависимости (включая dev — vite нужен для сборки),
+# Фронт: ставим ВСЕ зависимости (включая dev — vite нужен для сборки),
 # собираем SPA, затем удаляем dev-зависимости из образа.
 COPY frontend ./frontend
 RUN cd /app/frontend && npm install && npm run build && npm prune --omit=dev

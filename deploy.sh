@@ -26,11 +26,24 @@ install_docker() {
     log "Docker и docker compose уже установлены"
     return
   fi
-  log "Устанавливаем Docker и docker compose plugin..."
+
+  log "Устанавливаем Docker через официальный скрипт get.docker.com..."
   export DEBIAN_FRONTEND=noninteractive
   apt-get update -y
-  apt-get install -y ca-certificates curl gnupg git docker.io docker-compose-plugin
+  apt-get install -y ca-certificates curl gnupg git
+
+  curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+  sh /tmp/get-docker.sh
+  rm -f /tmp/get-docker.sh
+
+  # Убедимся, что плагин docker compose доступен
+  if ! docker compose version >/dev/null 2>&1; then
+    log "Устанавливаем docker compose plugin..."
+    apt-get install -y docker-compose-plugin
+  fi
+
   systemctl enable --now docker 2>/dev/null || true
+  log "Docker установлен"
 }
 
 main() {
