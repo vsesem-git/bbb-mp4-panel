@@ -27,7 +27,7 @@ RUN cd /app/backend && npm install --omit=dev || (sleep 30 && npm install --omit
 # Фронт: ставим ВСЕ зависимости (включая dev — vite нужен для сборки),
 # собираем SPA, затем удаляем dev-зависимости из образа.
 COPY frontend ./frontend
-RUN cd /app/frontend && npm install && npm run build && npm prune --omit=dev
+RUN cd /app/frontend && npm install --include=dev && npm run build && npm prune --omit=dev
 
 COPY backend ./backend
 COPY entrypoint.sh ./entrypoint.sh
