@@ -1,0 +1,8 @@
+node_modules/
+frontend/dist/
+backend/package-lock.json
+frontend/package-lock.json
+.env
+.env.local
+npm-debug.log*
+.DS_Store

@@ -1,0 +1,20 @@
+{
+  "name": "bbb-mp4-panel-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend + worker for BBB recordings to MP4 conversion panel",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^4.21.0",
+    "puppeteer": "^22.0.0",
+    "sql.js": "^1.10.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
